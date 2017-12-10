@@ -1,9 +1,4 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import javax.swing.*;
-import java.util.Random;
-
+package com.nit.myapplication;
 public class pathfinder {
     int adj[][]=new int[10][10];
     int n, startnode, endnode;
