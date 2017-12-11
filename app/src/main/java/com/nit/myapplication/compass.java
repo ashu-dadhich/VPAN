@@ -19,7 +19,7 @@ public class compass extends AppCompatActivity implements SensorEventListener {
     private ImageView image;
     private TextView compassAngle;
     private float currentDegree = 0f;
-    private double bearingValue;
+    private float bearingValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,28 @@ public class compass extends AppCompatActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
 
         float degree = Math.round(event.values[0]);
-        compassAngle.setText("Heading: " + Float.toString(degree) + " degrees");
+        bearingValue = 317f;
+        float acw = 0f, cw = 0f;
+        //angle from destination to source (not the opposite)
+        // if clockwise angle is obtained, the user has to turn anticlockwise to make the deviation zero
+        if(degree <= bearingValue)
+        {
+            acw = bearingValue - degree;
+            cw = (360f - bearingValue) + degree;
+        }
+        else
+        {
+            acw = bearingValue + (360 - degree);
+            cw = degree - bearingValue;
+        }
+        if(cw < acw)
+        {
+            compassAngle.setText("Heading: " + Float.toString(degree) + " degrees, move " + cw + "deg anti - clockwise");
+        }
+        else
+        {
+            compassAngle.setText("Heading: " + Float.toString(degree) + " degrees, move " + acw + "deg clockwise");
+        }
         Log.e("anglevalue", Float.toString(degree));
         // create a rotation animation (reverse turn degree degrees)
         RotateAnimation ra = new RotateAnimation(
