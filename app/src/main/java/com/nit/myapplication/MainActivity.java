@@ -1,21 +1,24 @@
 package com.nit.myapplication;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private ListView mListView;
     private FloatingActionButton mButtonSend;
     private EditText mEditTextMessage;
     private ImageView mImageView;
     private ChatMessageAdapter mAdapter;
+    private Button compassbutton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new ChatMessageAdapter(this, new ArrayList<ChatMessage>());
         mListView.setAdapter(mAdapter);
 
+        // gp
+        compassbutton = (Button) findViewById(R.id.compassbutton);
+        compassbutton.setOnClickListener(this);
+
 //code for sending the message
         mButtonSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,6 +45,21 @@ public class MainActivity extends AppCompatActivity {
                 mListView.setSelection(mAdapter.getCount() - 1);
             }
         });
+    }
+
+
+
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == R.id.compassbutton)
+        {
+            Intent in = new Intent(this, compass.class);
+            startActivity(in);
+            //getDirection obj = new getDirection(0);
+            //obj.onSensorChanged();
+            //Log.e("angle", Double.toString(angle));
+        }
     }
 
     private void sendMessage(String message) {

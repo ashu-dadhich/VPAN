@@ -1,4 +1,5 @@
 package com.nit.myapplication;
+
 public class pathfinder {
     int adj[][]=new int[10][10];
     int n, startnode, endnode;

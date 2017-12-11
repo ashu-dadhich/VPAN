@@ -8,6 +8,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
+
+
     <!--List view for displaying chat messages-->
     <ListView
         android:id="@+id/listView"
@@ -45,6 +47,13 @@
             android:layout_height="wrap_content"
             android:src="@drawable/cmv_arrow"
             android:text="Send" />
+
+        <Button
+            android:text="Compass"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:id="@+id/compassbutton"
+            android:textSize="24sp" />
     </LinearLayout>
 
 </RelativeLayout>
