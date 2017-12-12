@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     int flag=0;
     private float currentDegree = 0f;
     private float final_bearing=138f;
+    private SensorManager sensorManager;
 
 
     @Override
@@ -78,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
         mAdapter = new ChatMessageAdapter(this, new ArrayList<ChatMessage>());
         mListView.setAdapter(mAdapter);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        //but resume pai to recursion nahi ho raha tha?
 
 //code for sending the message
         mButtonSend.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +93,21 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 mListView.setSelection(mAdapter.getCount() - 1);
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        sensorManager.unregisterListener(this);
+        //fine? // TODO: 13/12/17 now step count sensor remaining! 
     }
 
     @Override
@@ -146,14 +165,14 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
              okok */
             //@// TODO: 13/12/17 listen listen i will send you the apk with a toast msg about the compass reading you test his
             flag=0;
-            //
+            //mai pani peeke ata hu ... 5 mins oye sn kya
         }
         if(message.equalsIgnoreCase("hi") || message.contains("hi") || message.equalsIgnoreCase("hello"))
             mimicOtherMessage("Hi User");
         else if(message.contains("help")||message.contains("Help"))
             mimicCameraMessage("OK firing up Camera");
         else if(message.equalsIgnoreCase("angle"))
-            mimicCameraMessage("Angle: "+currentDegree+" final:"+ final_bearing+" total:"+(final_bearing+currentDegree));
+            mimicOtherMessage("Angle: "+currentDegree+" final:"+ final_bearing+" total:"+(final_bearing+currentDegree));
         else
             mimicOtherMessage("Sorry! I didn't catch that.");
     }
