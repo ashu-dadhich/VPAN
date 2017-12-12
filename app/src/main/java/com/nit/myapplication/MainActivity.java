@@ -42,7 +42,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, SensorEventListener{
+import StepCounter.StepDetector;
+import StepCounter.StepListener;
+
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, SensorEventListener, StepListener{
     private ListView mListView;
     private FloatingActionButton mButtonSend;
     private EditText mEditTextMessage;
@@ -61,7 +64,11 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     //private float currentDegree = 0f;
     private float final_bearing=138f;
     private SensorManager sensorManager;
+    private SensorManager sensorManager1;
     private float degree=0f;
+    private int numSteps=0;
+    private StepDetector simpleStepDetector;
+    private Sensor accel;
 
 
     @Override
@@ -81,7 +88,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
         mAdapter = new ChatMessageAdapter(this, new ArrayList<ChatMessage>());
         mListView.setAdapter(mAdapter);
+
+        //// TODO: 13/12/17 compass and step-counter
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager1 = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new StepDetector();
+        simpleStepDetector.registerListener(this);
         //but resume pai to recursion nahi ho raha tha?
 
 //code for sending the message
@@ -182,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 mimicOtherMessage("Rotate clockwise by "+(acw)+
                         "Move to checkpoint"+nextCheckpoint+ "for 5 meters :" );
             }
+            sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+
             flag=0;
         }
         if(message.equalsIgnoreCase("hi") || message.contains("hi") || message.equalsIgnoreCase("hello"))
@@ -192,8 +207,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             mimicOtherMessage("Ang: "+degree+" final:"+ final_bearing+" total:"+(cw)+" "+acw);
         else
             mimicOtherMessage("Sorry! I didn't catch that.");
-        //backchod sale lol
-        //report thik hai and ppt?
+
     }
 
     private void mimicOtherMessage(String message) {
@@ -347,6 +361,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            simpleStepDetector.updateAccel(
+                    event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
         degree = Math.round(event.values[0]);
         //koi gal nahi lol mujhe bhi nahi idea koi
         Log.e("anglevalue", Float.toString(degree));
@@ -358,5 +376,17 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    @Override
+    public void step(long timeNs) {
+        numSteps++;
+        Toast.makeText(this, "Step taken"+numSteps, Toast.LENGTH_SHORT).show();
+        if(numSteps>=9){
+            sensorManager.unregisterListener(MainActivity.this);
+            speakOut("Ok user you have reached your next checkpoint type help again to continue navigation");
+            mimicOtherMessage("Ok user you have reached your next checkpoint type help again to continue navigation");
+            numSteps=0;
+        }
     }
 }
