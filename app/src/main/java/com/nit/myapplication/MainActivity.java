@@ -58,9 +58,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private final int REQ_CODE_SPEECH_INPUT = 100;
     pathfinder nextNode;
     int flag=0;
-    private float currentDegree = 0f;
+    //private float currentDegree = 0f;
     private float final_bearing=138f;
     private SensorManager sensorManager;
+    private float degree=0f;
 
 
     @Override
@@ -143,38 +144,56 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ChatMessage chatMessage = new ChatMessage(message, true, false);
         mAdapter.add(chatMessage);
         //respond as Helloworld
+        float acw=0f,cw=0f;
         if(flag==1){
             Constants.final_placeName=message;
             nextNode=new pathfinder(Integer.parseInt(Constants.intital_placeName),Integer.parseInt(Constants.final_placeName));
             int nextCheckpoint=nextNode.findNextNode();
-            float bearing=(final_bearing+currentDegree);
-            Log.d("ashu",""+final_bearing+" "+currentDegree+" "+bearing);
-            //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
-            if(bearing<0){
-                mimicOtherMessage("Rotate anti-clocwise by"+(final_bearing+currentDegree)+
-                        "Move to checkpoint "+nextCheckpoint+ "for 5 meters :" );
-            }else{
-                mimicOtherMessage("Rotate clockwise by "+(final_bearing+currentDegree)+
-                        "Move to checkpoint"+nextCheckpoint+ "for 5 meters :" );
-
+            if(Integer.parseInt(Constants.intital_placeName)<Integer.parseInt(Constants.final_placeName)){
+                final_bearing=317f;
+                //ye kafi hai i think no need of another if
+            }else if(Integer.parseInt(Constants.intital_placeName)>Integer.parseInt(Constants.final_placeName)){
+                final_bearing=138f;
             }
-            //ok?
-            //@todo compass and step count sensor!!!!!
-            //but kis direction mai clockwise or anticlowise?
-            /*suno git hub pai dal dete apna compass wala code link de do phir ha bol
-             okok */
-            //@// TODO: 13/12/17 listen listen i will send you the apk with a toast msg about the compass reading you test his
+            float bearingValue=final_bearing;
+
+
+            //angle from destination to source (not the opposite)
+            // if clockwise angle is obtained, the user has to turn anticlockwise to make the deviation zero
+            if(degree <= bearingValue)
+            {
+                acw = bearingValue - degree;
+                cw = (360f - bearingValue) + degree;
+            }
+            else
+            {
+                acw = bearingValue + (360 - degree);
+                cw = degree - bearingValue;
+            }
+            if(cw < acw)
+            {
+//                compassAngle.setText("Heading: " + Float.toString(degree) + " degrees, move " + cw + "deg anti - clockwise");
+                mimicOtherMessage("Rotate anti-clocwise by"+(cw)+
+                        "Move to checkpoint "+nextCheckpoint+ "for 5 meters :" );
+            }
+            else
+            {
+//                compassAngle.setText("Heading: " + Float.toString(degree) + " degrees, move " + acw + "deg clockwise");
+                mimicOtherMessage("Rotate clockwise by "+(acw)+
+                        "Move to checkpoint"+nextCheckpoint+ "for 5 meters :" );
+            }
             flag=0;
-            //mai pani peeke ata hu ... 5 mins oye sn kya
         }
         if(message.equalsIgnoreCase("hi") || message.contains("hi") || message.equalsIgnoreCase("hello"))
             mimicOtherMessage("Hi User");
         else if(message.contains("help")||message.contains("Help"))
             mimicCameraMessage("OK firing up Camera");
-        else if(message.equalsIgnoreCase("angle"))
-            mimicOtherMessage("Angle: "+currentDegree+" final:"+ final_bearing+" total:"+(final_bearing+currentDegree));
+        else if(message.equalsIgnoreCase("a"))
+            mimicOtherMessage("Ang: "+degree+" final:"+ final_bearing+" total:"+(cw)+" "+acw);
         else
             mimicOtherMessage("Sorry! I didn't catch that.");
+        //backchod sale lol
+        //report thik hai and ppt?
     }
 
     private void mimicOtherMessage(String message) {
@@ -328,11 +347,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float degree = Math.round(event.values[0]);
+        degree = Math.round(event.values[0]);
         //koi gal nahi lol mujhe bhi nahi idea koi
         Log.e("anglevalue", Float.toString(degree));
         // create a rotation animation (reverse turn degree degrees)
-        currentDegree = -degree;
+        //yaha...
+       // currentDegree = -degree;
     }
 
     @Override
