@@ -3,6 +3,9 @@ package com.nit.myapplication;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -38,7 +41,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener{
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, SensorEventListener{
     private ListView mListView;
     private FloatingActionButton mButtonSend;
     private EditText mEditTextMessage;
@@ -54,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private final int REQ_CODE_SPEECH_INPUT = 100;
     pathfinder nextNode;
     int flag=0;
+    private float currentDegree = 0f;
+    private float final_bearing=138f;
 
 
     @Override
@@ -123,20 +128,32 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             Constants.final_placeName=message;
             nextNode=new pathfinder(Integer.parseInt(Constants.intital_placeName),Integer.parseInt(Constants.final_placeName));
             int nextCheckpoint=nextNode.findNextNode();
-            mimicOtherMessage("Move to checkpoint:" +nextCheckpoint);
-            /*//testing on phone wait
-            //yup
-            //test done working perfectly
-            //yeah eyeah
-            
-            //1,2//3anyway nope //yeah 1->3 answeris 2
-            //lol */
+            float bearing=(final_bearing+currentDegree);
+            Log.d("ashu",""+final_bearing+" "+currentDegree+" "+bearing);
+            //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+            if(bearing<0){
+                mimicOtherMessage("Rotate anti-clocwise by"+(final_bearing+currentDegree)+
+                        "Move to checkpoint "+nextCheckpoint+ "for 5 meters :" );
+            }else{
+                mimicOtherMessage("Rotate clockwise by "+(final_bearing+currentDegree)+
+                        "Move to checkpoint"+nextCheckpoint+ "for 5 meters :" );
+
+            }
+            //ok?
+            //@todo compass and step count sensor!!!!!
+            //but kis direction mai clockwise or anticlowise?
+            /*suno git hub pai dal dete apna compass wala code link de do phir ha bol
+             okok */
+            //@// TODO: 13/12/17 listen listen i will send you the apk with a toast msg about the compass reading you test his
             flag=0;
+            //
         }
         if(message.equalsIgnoreCase("hi") || message.contains("hi") || message.equalsIgnoreCase("hello"))
             mimicOtherMessage("Hi User");
         else if(message.contains("help")||message.contains("Help"))
             mimicCameraMessage("OK firing up Camera");
+        else if(message.equalsIgnoreCase("angle"))
+            mimicCameraMessage("Angle: "+currentDegree+" final:"+ final_bearing+" total:"+(final_bearing+currentDegree));
         else
             mimicOtherMessage("Sorry! I didn't catch that.");
     }
@@ -288,5 +305,19 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         //String text = txtText.getText().toString();
 
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float degree = Math.round(event.values[0]);
+        //koi gal nahi lol mujhe bhi nahi idea koi
+        Log.e("anglevalue", Float.toString(degree));
+        // create a rotation animation (reverse turn degree degrees)
+        currentDegree = -degree;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 }
