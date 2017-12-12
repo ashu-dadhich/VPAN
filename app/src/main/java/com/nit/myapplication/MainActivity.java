@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     BinaryUploadRequest binaryUploadRequest;
     //sppech code
     private final int REQ_CODE_SPEECH_INPUT = 100;
+    pathfinder nextNode;
+    int flag=0;
 
 
     @Override
@@ -117,6 +119,20 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ChatMessage chatMessage = new ChatMessage(message, true, false);
         mAdapter.add(chatMessage);
         //respond as Helloworld
+        if(flag==1){
+            Constants.final_placeName=message;
+            nextNode=new pathfinder(Integer.parseInt(Constants.intital_placeName),Integer.parseInt(Constants.final_placeName));
+            int nextCheckpoint=nextNode.findNextNode();
+            mimicOtherMessage("Move to checkpoint:" +nextCheckpoint);
+            /*//testing on phone wait
+            //yup
+            //test done working perfectly
+            //yeah eyeah
+            
+            //1,2//3anyway nope //yeah 1->3 answeris 2
+            //lol */
+            flag=0;
+        }
         if(message.equalsIgnoreCase("hi") || message.contains("hi") || message.equalsIgnoreCase("hello"))
             mimicOtherMessage("Hi User");
         else if(message.contains("help")||message.contains("Help"))
@@ -189,8 +205,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 String uploadId = UUID.randomUUID().toString();
                 binaryUploadRequest=new BinaryUploadRequest(this,uploadId,Constants.msgSendURL);
                 binaryUploadRequest.setFileToUpload(Constants.prev_file_name);
-                binaryUploadRequest.addHeader("Prediction_Key",Constants.Prediction_Key);
-                binaryUploadRequest.addHeader("Content_Type",Constants.Content_Type);
+                binaryUploadRequest.addHeader("Prediction-Key",Constants.Prediction_Key);
+                binaryUploadRequest.addHeader("Content-Type",Constants.Content_Type);
                 binaryUploadRequest.setNotificationConfig(new UploadNotificationConfig());
                 binaryUploadRequest.setMaxRetries(2);
                 binaryUploadRequest.setDelegate(new UploadStatusDelegate() {
@@ -211,8 +227,14 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             for(int xi=0;xi<jsonArray.length();xi++){
                                 JSONObject temp=jsonArray.getJSONObject(xi);
                                 if(xi==0){
-                                    Constants.placeName=temp.getString("Tag");
-                                    Toast.makeText(MainActivity.this, ""+Constants.placeName, Toast.LENGTH_SHORT).show();
+                                    String tempString =temp.getString("Tag");
+                                    Toast.makeText(MainActivity.this, ""+tempString, Toast.LENGTH_SHORT).show();
+                                    int length=tempString.length();
+                                    Constants.intital_placeName= ""+tempString.charAt(length-1);
+                                    mimicOtherMessage("Where do you want to go");
+                                    flag=1;
+                                    //now compass data is remaining
+
                                 }
                             }
                         } catch (JSONException e) {
